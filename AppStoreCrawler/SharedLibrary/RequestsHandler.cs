@@ -14,7 +14,7 @@ namespace SharedLibrary
             string htmlResponse = String.Empty;
             int currentRetry = 0, maxRetries = 100;
 
-            using (WebRequests client = new WebRequests ())
+            using (WebRequests client = new WebRequests())
             {
                 // (Re) Trying to reach Root Page
                 do
@@ -27,6 +27,11 @@ namespace SharedLibrary
             }
 
             return htmlResponse;
+        }
+
+        public string Get (string url)
+        {
+            return new WebRequests().Get (url);
         }
     }
 }

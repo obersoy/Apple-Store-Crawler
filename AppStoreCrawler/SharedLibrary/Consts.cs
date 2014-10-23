@@ -8,6 +8,10 @@ namespace SharedLibrary
 {
     public class Consts
     {
+        // Urls
         public const string ROOT_STORE_URL = "https://itunes.apple.com/us/genre/ios-books/id6018?mt=8";
+        
+        // XPaths - Root Page 
+        public const string XPATH_CATEGORIES_URLS = "//a[contains(@class,'top-level-genre')]";
     }
 }

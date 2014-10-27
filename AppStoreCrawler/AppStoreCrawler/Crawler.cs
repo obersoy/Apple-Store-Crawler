@@ -2,18 +2,27 @@
 using SharedLibrary.Logging;
 using SharedLibrary.Parsing;
 using System;
+using SharedLibrary.AWS;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Web;
+using SharedLibrary.ConfigurationReader;
 
 namespace AppStoreCrawler
 {
     class Crawler
     {
+        // Logging Tool
         private static LogWrapper _logger;
+
+        // Configuration Values
+        private static string _categoriesQueueName;
+        private static string _awsKey;
+        private static string _awsKeySecret;
 
         static void Main (string[] args)
         {
@@ -22,64 +31,11 @@ namespace AppStoreCrawler
             AppStoreParser  parser     = new AppStoreParser ();
             _logger                    = new LogWrapper ();
 
-            #region ** Step 4 - Action Handler **
+            // Loading Configuration
+            LoadConfiguration ();
 
-            Action<String> charactersUrlScrapperAction = (String characterUrl) =>
-            {
-                // Creating Thread-only instance of Requests Handler
-                RequestsHandler threadHttpClient = new RequestsHandler();
-                String categoryHtmlResponse;
-
-                // Retrying Get Request
-                int retriesCount = 0, maxRetries = 10;
-                do
-                {
-                    // Executing Get for the URL received
-                    categoryHtmlResponse = threadHttpClient.Get(characterUrl);
-                    retriesCount++;
-
-                } while (String.IsNullOrWhiteSpace(categoryHtmlResponse) && retriesCount <= maxRetries);
-
-                _logger.LogMessage (characterUrl);
-            };
-
-            #endregion
-
-            #region ** Step 3 Action Handler **
-
-            // Creating Action to Handle Step 3
-            Action<String> categoriesScrapperAction = (string categoryUrl) =>
-            {
-                // Logging Feedback
-                _logger.LogMessage ("\tStarted Scrapping Category : " + categoryUrl);
-
-                // Creating Thread-only instance of Requests Handler
-                RequestsHandler threadHttpClient = new RequestsHandler();
-                String categoryHtmlResponse;
-
-                // Retrying Get Request
-                int retriesCount = 0, maxRetries = 10;
-                do
-                {
-                    // Executing Get for the URL received
-                    categoryHtmlResponse = threadHttpClient.Get(categoryUrl);
-                    retriesCount++;
-
-                } while (String.IsNullOrWhiteSpace(categoryHtmlResponse) && retriesCount <= maxRetries);
-
-                // Creating thread-only instance of Page Parser
-                AppStoreParser scrapper = new AppStoreParser();
-                var scp = scrapper.ParseCharacterUrls(categoryHtmlResponse).ToList();
-
-                // Iterating over Parsed Character Urls (A,B,C...#)
-                foreach (string characterUrl in scrapper.ParseCharacterUrls(categoryHtmlResponse))
-                {
-                    Thread charactersScrappingAction = new Thread (() => charactersUrlScrapperAction (characterUrl));
-                    charactersScrappingAction.Start ();
-                }
-            };
-
-            #endregion
+            // AWS Queue Handler
+            AWSSQSHelper sqsWrapper = new AWSSQSHelper (_categoriesQueueName, 10, _awsKey, _awsKeySecret);
 
             // Step 1 - Trying to obtain the root page html (source of all the apps)
             var rootPageResponse = httpClient.GetRootPage ();
@@ -91,14 +47,24 @@ namespace AppStoreCrawler
                 return;
             }
 
-            // Step 2 - Extracting Category Urls from the Root Page
+            // Step 2 - Extracting Category Urls from the Root Page and queueing their Urls
             foreach (var categoryUrl in parser.ParseCategoryUrls (rootPageResponse))
             {
-                Thread categoryScrappingThead = new Thread (() => categoriesScrapperAction (categoryUrl));
-                categoryScrappingThead.Start ();
+                // Logging Feedback
+                _logger.LogMessage ("Queueing Category : " + categoryUrl);
+
+                // Queueing Category Urls
+                sqsWrapper.EnqueueMessage (categoryUrl);
             }
 
-            Console.ReadLine ();
+            _logger.LogMessage ("End of Bootstrapping phase");
+        }
+
+        private static void LoadConfiguration ()
+        {
+            _categoriesQueueName = ConfigurationReader.LoadConfigurationSetting<String> ("AWSCategoriesQueue", String.Empty);
+            _awsKey              = ConfigurationReader.LoadConfigurationSetting<String> ("AWSKey"            , String.Empty);
+            _awsKeySecret        = ConfigurationReader.LoadConfigurationSetting<String> ("AWSKeySecret"      , String.Empty);
         }
     }
 }

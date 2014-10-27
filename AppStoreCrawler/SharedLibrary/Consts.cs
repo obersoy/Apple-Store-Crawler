@@ -14,6 +14,7 @@ namespace SharedLibrary
         // XPaths - Root Page 
         public const string XPATH_CATEGORIES_URLS = "//a[contains(@class,'top-level-genre')]";
         public const string XPATH_CHARACTERS_URLS = "//div[@id='selectedgenre']/ul[@class='list alpha']/li/a";
+        public const string XPATH_NUMERIC_URLS    = "//ul[@class='list paginate']/li/a";
 
     }
 }

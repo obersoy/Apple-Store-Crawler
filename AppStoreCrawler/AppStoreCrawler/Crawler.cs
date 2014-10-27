@@ -32,9 +32,11 @@ namespace AppStoreCrawler
             _logger                    = new LogWrapper ();
 
             // Loading Configuration
+            _logger.LogMessage ("Reading Configuration");
             LoadConfiguration ();
 
             // AWS Queue Handler
+            _logger.LogMessage ("Initializing Queues");
             AWSSQSHelper sqsWrapper = new AWSSQSHelper (_categoriesQueueName, 10, _awsKey, _awsKeySecret);
 
             // Step 1 - Trying to obtain the root page html (source of all the apps)

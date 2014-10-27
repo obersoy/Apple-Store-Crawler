@@ -42,8 +42,8 @@ namespace AppStoreCategoriesWorker
 
             // AWS Queue Handler
             _logger.LogMessage ("Initializing Queues");
-            AWSSQSHelper categoriesUrlQueue = new AWSSQSHelper (_categoriesQueueName   , 10, _awsKey, _awsKeySecret);
-            AWSSQSHelper charactersUrlQueue = new AWSSQSHelper (_characterUrlsQueueName, 10, _awsKey, _awsKeySecret);
+            AWSSQSHelper categoriesUrlQueue = new AWSSQSHelper (_categoriesQueueName   , _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
+            AWSSQSHelper charactersUrlQueue = new AWSSQSHelper (_characterUrlsQueueName, _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
 
             // Setting Error Flag to No Error ( 0 )
             System.Environment.ExitCode = 0;

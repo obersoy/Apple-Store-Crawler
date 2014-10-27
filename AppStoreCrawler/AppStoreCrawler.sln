@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharedLibrary", "SharedLibr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppStoreCategoriesWorker", "AppStoreCategoriesWorker\AppStoreCategoriesWorker.csproj", "{AFED8722-DF52-4E00-82C6-1E7EFAAC7ECC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppStoreUrlsWorker", "AppStoreUrlsWorker\AppStoreUrlsWorker.csproj", "{43AB06E0-EA6F-451B-8699-C2E038052E58}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{AFED8722-DF52-4E00-82C6-1E7EFAAC7ECC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFED8722-DF52-4E00-82C6-1E7EFAAC7ECC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFED8722-DF52-4E00-82C6-1E7EFAAC7ECC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{43AB06E0-EA6F-451B-8699-C2E038052E58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{43AB06E0-EA6F-451B-8699-C2E038052E58}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{43AB06E0-EA6F-451B-8699-C2E038052E58}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{43AB06E0-EA6F-451B-8699-C2E038052E58}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -11,16 +11,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 
-namespace AppStoreUrlsWorker
+namespace AppStoreCharactersWorker
 {
-    class AppUrlsWorker
+    class CharactersWorker
     {
         // Logging Tool
         private static LogWrapper _logger;
 
         // Configuration Values
         private static string _characterUrlsQueueName;
-        private static string _appsUrlsQueueName;
+        private static string _numericUrlsQueueName;
         private static string _awsKey;
         private static string _awsKeySecret;
         private static int    _maxRetries;
@@ -43,7 +43,7 @@ namespace AppStoreUrlsWorker
             // AWS Queue Handler
             _logger.LogMessage ("Initializing Queues");
             AWSSQSHelper charactersUrlQueue = new AWSSQSHelper (_characterUrlsQueueName, _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
-            AWSSQSHelper appsUrlsQueue      = new AWSSQSHelper (_appsUrlsQueueName     , _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
+            AWSSQSHelper _numericUrlQueue   = new AWSSQSHelper (_numericUrlsQueueName     , _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
 
             // Setting Error Flag to No Error ( 0 )
             System.Environment.ExitCode = 0;
@@ -51,7 +51,7 @@ namespace AppStoreUrlsWorker
             // Initialiazing Control Variables
             int fallbackWaitTime = 1;
 
-            _logger.LogMessage ("Started Processing Category Urls");
+            _logger.LogMessage ("Started Processing Character Urls");
 
             do
             {
@@ -113,6 +113,9 @@ namespace AppStoreUrlsWorker
                                 {
                                     _logger.LogMessage ("Retrying Request for Character Page", "Request Error", BDC.BDCCommons.TLogEventLevel.Error);
                                     retries++;
+
+                                    // Small Hiccup
+                                    Thread.Sleep (_hiccupTime);
                                 }
 
                             } while (String.IsNullOrWhiteSpace (htmlResponse) && retries <= _maxRetries);
@@ -125,12 +128,62 @@ namespace AppStoreUrlsWorker
                                 continue;
                             }
 
-                            // If the request worked, parses the Urls out of the page
-                            foreach (string numericUrls in parser.ParseNumericUrls (htmlResponse))
+                            // Hashset of urls processed (to avoid duplicates)
+                            HashSet<String> urlsQueued = new HashSet<String> ();
+
+                            // Executing Request and Queueing Urls until there's no other Url to be queued
+                            do
                             {
-                                // Enqueueing Urls
-                                charactersUrlQueue.EnqueueMessage (HttpUtility.HtmlDecode (numericUrls));
-                            }
+                                // Flag to check whether any url was added after the last iteration (avoids endless loop)
+                                bool anyNewUrl = false;
+
+                                // If the request worked, parses the Urls out of the page
+                                foreach (string numericUrls in parser.ParseNumericUrls (htmlResponse).Select (t => HttpUtility.HtmlDecode (t)))
+                                {
+                                    // Checking if this url was previously queued
+                                    if (!urlsQueued.Contains (numericUrls))
+                                    {
+                                        // Enqueueing Urls
+                                        _numericUrlQueue.EnqueueMessage (HttpUtility.HtmlDecode (numericUrls));
+
+                                        // Adding url to the local hashset
+                                        urlsQueued.Add (numericUrls);
+                                        anyNewUrl = true;
+                                    }
+                                }
+
+                                // Checking for the need to perform another http request for the next page
+                                if (parser.IsLastPage (htmlResponse) || !anyNewUrl)
+                                {
+                                    break; // Breaks "While" Loop
+                                }
+
+                                // Feedback
+                                _logger.LogMessage ("Urls Queued For This Page : " + urlsQueued.Count, "\n\tProcessing Feedback");
+
+                                // If it got to this point, it means that there are more pages to be processed
+                                // Parsing URL of the "Last" page (the last that's visible)
+                                string lastPageUrl = HttpUtility.HtmlDecode (parser.ParseLastPageUrl (htmlResponse));
+
+                                // Executing Http Request for this Url (with retries)
+                                retries = 0;
+                                do
+                                {
+                                    // HTTP Get for the Page
+                                    htmlResponse = httpClient.Get (lastPageUrl);
+
+                                    if (String.IsNullOrEmpty (htmlResponse))
+                                    {
+                                        _logger.LogMessage ("Retrying Request for Last Page", "Request Error", BDC.BDCCommons.TLogEventLevel.Error);
+                                        retries++;
+
+                                        // Small Hiccup
+                                        Thread.Sleep (_hiccupTime);
+                                    }
+
+                                } while (String.IsNullOrEmpty (htmlResponse) && retries <= _maxRetries);
+
+                            } while (true);
                         }
                         catch (Exception ex)
                         {
@@ -155,8 +208,8 @@ namespace AppStoreUrlsWorker
         {
             _maxRetries             = ConfigurationReader.LoadConfigurationSetting<int>    ("MaxRetries"           , 0);
             _maxMessagesPerDequeue  = ConfigurationReader.LoadConfigurationSetting<int>    ("MaxMessagesPerDequeue", 10);
-            _appsUrlsQueueName      = ConfigurationReader.LoadConfigurationSetting<String> ("AppsUrlsQueueName"    , String.Empty);
             _characterUrlsQueueName = ConfigurationReader.LoadConfigurationSetting<String> ("AWSCharacterUrlsQueue", String.Empty);
+            _numericUrlsQueueName   = ConfigurationReader.LoadConfigurationSetting<String> ("AWSNumericUrlsQueue"  , String.Empty);
             _awsKey                 = ConfigurationReader.LoadConfigurationSetting<String> ("AWSKey"               , String.Empty);
             _awsKeySecret           = ConfigurationReader.LoadConfigurationSetting<String> ("AWSKeySecret"         , String.Empty);
         }

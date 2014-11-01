@@ -71,5 +71,24 @@ namespace SharedLibrary.Parsing
                 }
             }
         }
+
+        public bool IsLastPage (string htmlResponse)
+        {
+            // Creating HTML Map based on the html response
+            HtmlDocument map = new HtmlDocument ();
+            map.LoadHtml (htmlResponse);
+
+            // Trying to reach "Next" node
+            return map.DocumentNode.SelectSingleNode (Consts.XPATH_NEXT_PAGE) == null;
+        }
+        
+        public String ParseLastPageUrl (string htmlResponse)
+        {
+            // Creating HTML Map based on the html response
+            HtmlDocument map = new HtmlDocument ();
+            map.LoadHtml (htmlResponse);
+
+            return map.DocumentNode.SelectNodes (Consts.XPATH_LAST_PAGE).Last().Attributes["href"].Value;
+        }
     }
 }

@@ -25,7 +25,6 @@ namespace SharedLibrary.Parsing
                 if (href != null)
                 {
                     yield return href.Value;
-                    //break;
                 }
             }
         }
@@ -46,7 +45,6 @@ namespace SharedLibrary.Parsing
                 if (href != null)
                 {
                     yield return href.Value;
-                    //break;
                 }
             }
         }
@@ -67,7 +65,6 @@ namespace SharedLibrary.Parsing
                 if (href != null)
                 {
                     yield return href.Value;
-                    //break;
                 }
             }
         }
@@ -89,6 +86,26 @@ namespace SharedLibrary.Parsing
             map.LoadHtml (htmlResponse);
 
             return map.DocumentNode.SelectNodes (Consts.XPATH_LAST_PAGE).Last().Attributes["href"].Value;
+        }
+
+        public IEnumerable<String> ParseAppsUrls (string htmlResponse)
+        {
+            // Creating HTML Map based on the html response
+            HtmlDocument map = new HtmlDocument();
+            map.LoadHtml(htmlResponse);
+
+            // Reaching nodes of interest
+            foreach (HtmlNode characterNode in map.DocumentNode.SelectNodes (Consts.XPATH_APPS_URLS))
+            {
+                // Checking for Href Attribute within the node
+                HtmlAttribute href = characterNode.Attributes["href"];
+
+                // Sanity Check
+                if (href != null)
+                {
+                    yield return href.Value;
+                }
+            }
         }
     }
 }

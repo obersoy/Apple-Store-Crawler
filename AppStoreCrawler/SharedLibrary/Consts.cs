@@ -17,5 +17,6 @@ namespace SharedLibrary
         public const string XPATH_NUMERIC_URLS    = "//ul[@class='list paginate']/li/a";
         public const string XPATH_NEXT_PAGE       = "//ul[@class='list paginate'][1]/li/a[@class='paginate-more']";
         public const string XPATH_LAST_PAGE       = "//ul[@class='list paginate'][1]/li/a[not(@class)]";
+        public const string XPATH_APPS_URLS       = "//div[contains(@class,'column') and not(@id)]/ul/li/a";
     }
 }

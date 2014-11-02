@@ -121,22 +121,23 @@ namespace SharedLibrary.Parsing
             AppleStoreAppModel parsedApp = new AppleStoreAppModel ();
 
             // Reaching nodes of interest
-            parsedApp.name             = GetNodeValue (map, Consts.XPATH_TITLE).Trim();
-            parsedApp.developerName    = GetAppDeveloperName (map);
-            parsedApp.developerUrl     = GetDeveloperUrl (map);
-            parsedApp.price            = GetAppPrice (map);
-            parsedApp.isFree           = parsedApp.price == 0.0 ? true : false;
-            parsedApp.category         = GetAppCategory (map);
-            parsedApp.updateDate       = GetAppUpdateDate (map);
-            //parsedApp.description    = GetAppDescription (map); //TODO: Figure out how to get description on a separated request
-            parsedApp.version          = GetAppVersion (map);
-            parsedApp.size             = GetAppSize (map);
-            parsedApp.thumbnailUrl     = GetThumbnailUrl (map);
-            parsedApp.languages        = GetLanguages (map);
-            parsedApp.compatibility    = GetCompatibility (map);
-            parsedApp.minimumAge       = GetMinimumAge (map);
-            parsedApp.ageRatingReasons = GetRatingReasons (map);
-            parsedApp.rating           = GetRatings (map);
+            parsedApp.name              = GetNodeValue (map, Consts.XPATH_TITLE).Trim();
+            parsedApp.developerName     = GetAppDeveloperName (map);
+            parsedApp.developerUrl      = GetDeveloperUrl (map);
+            parsedApp.price             = GetAppPrice (map);
+            parsedApp.isFree            = parsedApp.price == 0.0 ? true : false;
+            parsedApp.category          = GetAppCategory (map);
+            parsedApp.updateDate        = GetAppUpdateDate (map);
+            //parsedApp.description     = GetAppDescription (map); //TODO: Figure out how to get description on a separated request
+            parsedApp.version           = GetAppVersion (map);
+            parsedApp.size              = GetAppSize (map);
+            parsedApp.thumbnailUrl      = GetThumbnailUrl (map);
+            parsedApp.languages         = GetLanguages (map);
+            parsedApp.compatibility     = GetCompatibility (map);
+            parsedApp.minimumAge        = GetMinimumAge (map);
+            parsedApp.ageRatingReasons  = GetRatingReasons (map);
+            parsedApp.rating            = GetRatings (map);
+            parsedApp.topInAppPurchases = GetInAppPurchases (map);
 
 
             return parsedApp;
@@ -316,6 +317,15 @@ namespace SharedLibrary.Parsing
                 Int32.Parse (String.Concat (splitedAttribute[0].Where ( t => Char.IsDigit (t)))),
                 Int32.Parse (String.Concat (splitedAttribute[1].Where ( t => Char.IsDigit (t)))),
             };
+        }
+
+        private InAppPurchase[] GetInAppPurchases (HtmlDocument map)
+        {
+            List<InAppPurchase> inAppPurchases = new List<InAppPurchase> ();
+
+
+
+            return inAppPurchases.ToArray ();
         }
 
         private string GetNodeValue (HtmlDocument map, string xPath)

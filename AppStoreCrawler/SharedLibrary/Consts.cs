@@ -31,6 +31,8 @@ namespace SharedLibrary
         public const string XPATH_APP_SIZE       = "//span[contains(text(),'Size')]";
         public const string XPATH_THUMBNAIL      = "//div[@class='artwork']/img[@width='175']";
         public const string XPATH_LANGUAGES      = "//ul[@class='list']/li[@class='language']";
+        public const string XPATH_COMPATIBILITY  = "//span[@class='app-requirements']";
+        public const string XPATH_MINIMUM_AGE    = "//div[@class='app-rating']/a";
 
         // Culture Info and Globalization
         public const string CURRENT_CULTURE_INFO = "en-US";

@@ -133,6 +133,8 @@ namespace SharedLibrary.Parsing
             parsedApp.size          = GetAppSize (map);
             parsedApp.thumbnailUrl  = GetThumbnailUrl (map);
             parsedApp.languages     = GetLanguages (map);
+            parsedApp.compatibility = GetCompatibility (map);
+            parsedApp.minimumAge    = GetMinimumAge (map);
 
 
             return parsedApp;
@@ -229,6 +231,24 @@ namespace SharedLibrary.Parsing
             languagesNode          = languagesNode.FirstChild.NextSibling;
 
             return languagesNode.InnerText.Split (',').Select (t => t.Trim()).ToArray();
+        }
+
+        private string GetCompatibility (HtmlDocument map)
+        {
+            // Reaching Node that contains the Version number
+            HtmlNode compatibilityNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_COMPATIBILITY);
+            compatibilityNode = compatibilityNode.NextSibling;
+
+            return compatibilityNode.InnerText;
+        }
+
+        private int GetMinimumAge (HtmlDocument map)
+        {
+            // Reaching inner text of the inner node
+            string innerTxt = GetNodeValue (map, Consts.XPATH_MINIMUM_AGE);
+
+            // Parsing result to int
+            return Int32.Parse (String.Concat(innerTxt.Where (t => Char.IsDigit (t))));
         }
 
         private string GetNodeValue (HtmlDocument map, string xPath)

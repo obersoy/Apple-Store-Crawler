@@ -33,6 +33,8 @@ namespace SharedLibrary
         public const string XPATH_LANGUAGES      = "//ul[@class='list']/li[@class='language']";
         public const string XPATH_COMPATIBILITY  = "//span[@class='app-requirements']";
         public const string XPATH_MINIMUM_AGE    = "//div[@class='app-rating']/a";
+        public const string XPATH_RATING_REASONS = "//ul[@class='list app-rating-reasons']/li";
+        public const string XPATH_RATINGS        = "//div[@class='extra-list customer-ratings']";
 
         // Culture Info and Globalization
         public const string CURRENT_CULTURE_INFO = "en-US";

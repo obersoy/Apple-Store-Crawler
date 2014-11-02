@@ -40,6 +40,14 @@ namespace SharedLibrary.Models
         public int starsVersionAllVersions   { get; set; }
         public int ratingsCurrentVersion     { get; set; }
         public int ratingsAllVersions        { get; set; }
+
+        public Rating ()
+        {
+            starsRatingCurrentVersion = 0;
+            starsVersionAllVersions   = 0;
+            ratingsCurrentVersion     = 0;
+            ratingsAllVersions        = 0;
+        }
     }
 
     public class InAppPurchase

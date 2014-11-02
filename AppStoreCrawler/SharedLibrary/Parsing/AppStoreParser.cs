@@ -121,20 +121,22 @@ namespace SharedLibrary.Parsing
             AppleStoreAppModel parsedApp = new AppleStoreAppModel ();
 
             // Reaching nodes of interest
-            parsedApp.name          = GetNodeValue (map, Consts.XPATH_TITLE).Trim();
-            parsedApp.developerName = GetAppDeveloperName (map);
-            parsedApp.developerUrl  = GetDeveloperUrl (map);
-            parsedApp.price         = GetAppPrice (map);
-            parsedApp.isFree        = parsedApp.price == 0.0 ? true : false;
-            parsedApp.category      = GetAppCategory (map);
-            parsedApp.updateDate    = GetAppUpdateDate (map);
-            //parsedApp.description = GetAppDescription (map); //TODO: Figure out how to get description on a separated request
-            parsedApp.version       = GetAppVersion (map);
-            parsedApp.size          = GetAppSize (map);
-            parsedApp.thumbnailUrl  = GetThumbnailUrl (map);
-            parsedApp.languages     = GetLanguages (map);
-            parsedApp.compatibility = GetCompatibility (map);
-            parsedApp.minimumAge    = GetMinimumAge (map);
+            parsedApp.name             = GetNodeValue (map, Consts.XPATH_TITLE).Trim();
+            parsedApp.developerName    = GetAppDeveloperName (map);
+            parsedApp.developerUrl     = GetDeveloperUrl (map);
+            parsedApp.price            = GetAppPrice (map);
+            parsedApp.isFree           = parsedApp.price == 0.0 ? true : false;
+            parsedApp.category         = GetAppCategory (map);
+            parsedApp.updateDate       = GetAppUpdateDate (map);
+            //parsedApp.description    = GetAppDescription (map); //TODO: Figure out how to get description on a separated request
+            parsedApp.version          = GetAppVersion (map);
+            parsedApp.size             = GetAppSize (map);
+            parsedApp.thumbnailUrl     = GetThumbnailUrl (map);
+            parsedApp.languages        = GetLanguages (map);
+            parsedApp.compatibility    = GetCompatibility (map);
+            parsedApp.minimumAge       = GetMinimumAge (map);
+            parsedApp.ageRatingReasons = GetRatingReasons (map);
+            parsedApp.rating           = GetRatings (map);
 
 
             return parsedApp;
@@ -249,6 +251,71 @@ namespace SharedLibrary.Parsing
 
             // Parsing result to int
             return Int32.Parse (String.Concat(innerTxt.Where (t => Char.IsDigit (t))));
+        }
+
+        private string[] GetRatingReasons (HtmlDocument map)
+        {
+            // List of parsed reasons
+            List<String> reasons = new List<String> ();
+
+            // Iterating over needed nodes
+            try
+            {
+                foreach (var reasonNode in map.DocumentNode.SelectNodes (Consts.XPATH_RATING_REASONS))
+                {
+                    reasons.Add (reasonNode.InnerText.ToUpper ().Trim ());
+                }
+            }
+            catch { } // Exception will be thrown in case there are no "rating reasons" for this app. This is ok and shouldn't be treated
+
+            return reasons.ToArray ();
+        }
+
+        private Rating GetRatings (HtmlDocument map)
+        {
+            Rating appRating = new Rating ();
+
+            // Reaching Rating Parent Node
+            HtmlNode ratingNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_RATINGS);
+
+            // Reaching child nodes for their data
+            HtmlNode childNode = ratingNode.SelectSingleNode (".//div[@class='rating'][1]");
+
+            // Checking if this app has any ratings
+            if (childNode != null)
+            {
+                // If there are ratings for this app, parse them
+                // Node 1 : Current Version Ratings
+                string attributeValue = childNode.Attributes["aria-label"].Value;
+                int[]  parsedRatings  = RatingsParser (attributeValue);
+
+                appRating.starsRatingCurrentVersion = parsedRatings[0];
+                appRating.ratingsCurrentVersion     = parsedRatings[1];
+
+                // Node 2 : All Versions Ratings
+                childNode = ratingNode.SelectSingleNode (".//div[@class='rating'][2]");
+
+                attributeValue = childNode.Attributes["aria-label"].Value;
+                parsedRatings  = RatingsParser (attributeValue);
+
+                appRating.starsVersionAllVersions = parsedRatings[0];
+                appRating.ratingsAllVersions      = parsedRatings[1];
+            }
+
+            return appRating;
+        }
+
+        private int[] RatingsParser (string attributeValue)
+        {
+            // Splitting the attribute in two and trimming the results
+            string[] splitedAttribute = attributeValue.Split (',').Select (t => t.Trim()).ToArray();
+            
+            // Returning ratings
+            return new int[]
+            {
+                Int32.Parse (String.Concat (splitedAttribute[0].Where ( t => Char.IsDigit (t)))),
+                Int32.Parse (String.Concat (splitedAttribute[1].Where ( t => Char.IsDigit (t)))),
+            };
         }
 
         private string GetNodeValue (HtmlDocument map, string xPath)

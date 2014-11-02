@@ -123,8 +123,13 @@ namespace SharedLibrary.Parsing
             // Reaching nodes of interest
             parsedApp.name          = GetNodeValue (map, Consts.XPATH_TITLE).Trim();
             parsedApp.developerName = GetAppDeveloperName (map);
+            parsedApp.developerUrl  = GetDeveloperUrl (map);
             parsedApp.price         = GetAppPrice (map);
             parsedApp.isFree        = parsedApp.price == 0.0 ? true : false;
+            parsedApp.category      = GetAppCategory (map);
+            parsedApp.updateDate    = GetAppUpdateDate (map);
+            //parsedApp.description = GetAppDescription (map); //TODO: Figure out how to get description on a separated request
+            parsedApp.version       = GetAppVersion (map);
 
 
             return parsedApp;
@@ -135,6 +140,14 @@ namespace SharedLibrary.Parsing
             string developerName = GetNodeValue (map, Consts.XPATH_DEVELOPER_NAME);
 
             return String.IsNullOrEmpty (developerName) ? String.Empty : developerName.Replace ("By", String.Empty).Trim().ToUpper();
+        }
+        private string GetDeveloperUrl (HtmlDocument map)
+        {
+            // Developer Url Node
+            HtmlNode devUrlNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_DEVELOPER_URL);
+
+            // Returning Url
+            return devUrlNode.Attributes["href"].Value;
         }
 
         private double GetAppPrice (HtmlDocument map)
@@ -153,6 +166,39 @@ namespace SharedLibrary.Parsing
             // the store country or your own IP sometimes
             CultureInfo cInfo = CultureInfo.GetCultureInfo (Consts.CURRENT_CULTURE_INFO);
             return Convert.ToDouble (stringPrice.Replace (cInfo.NumberFormat.CurrencySymbol, String.Empty));
+        }
+
+        private string GetAppCategory (HtmlDocument map)
+        {
+            // Reaching Category Node
+            return GetNodeValue (map, Consts.XPATH_CATEGORY).Trim();
+        }
+
+        private DateTime GetAppUpdateDate (HtmlDocument map)
+        {
+            // Reaching Node that contains the update date
+            HtmlNode updateDateNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_UPDATE_DATE);
+            updateDateNode = updateDateNode.FirstChild.NextSibling;
+
+            // Date Text
+            string dateTxt = updateDateNode.InnerText;
+
+            // Parsing Out 
+            return DateTime.ParseExact (dateTxt, Consts.DATE_FORMAT, new CultureInfo (Consts.CURRENT_CULTURE_INFO));
+        }
+
+        private string GetAppDescription (HtmlDocument map)
+        {
+            return GetNodeValue (map, Consts.XPATH_DESCRIPTION);
+        }
+
+        private string GetAppVersion (HtmlDocument map)
+        {
+            // Reaching Node that contains the Version number
+            HtmlNode versionNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_VERSION);
+            versionNode = versionNode.ParentNode.FirstChild.NextSibling;
+
+            return versionNode.InnerText.Trim();
         }
 
         private string GetNodeValue (HtmlDocument map, string xPath)

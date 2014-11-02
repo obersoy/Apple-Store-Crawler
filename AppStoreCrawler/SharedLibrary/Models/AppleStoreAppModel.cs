@@ -15,7 +15,6 @@ namespace SharedLibrary.Models
         public string   developerUrl             { get; set; }
         public double   price                    { get; set; }
         public bool     isFree                   { get; set; }
-        public string   editorialBadge           { get; set; }
         public string   description              { get; set; }
         public string   thumbnailUrl             { get; set; }
         public string   compatibility            { get; set; }

@@ -18,5 +18,13 @@ namespace SharedLibrary
         public const string XPATH_NEXT_PAGE       = "//ul[@class='list paginate'][1]/li/a[@class='paginate-more']";
         public const string XPATH_LAST_PAGE       = "//ul[@class='list paginate'][1]/li/a[not(@class)]";
         public const string XPATH_APPS_URLS       = "//div[contains(@class,'column') and not(@id)]/ul/li/a";
+
+        // XPaths - App Page
+        public const string XPATH_TITLE          = "//div[@id='title']/div[@class='left']/h1";
+        public const string XPATH_DEVELOPER_NAME = "//div[@id='title']/div[@class='left']/h2";
+        public const string XPATH_APP_PRICE      = "//ul[@class='list']/li/div[@class='price']";
+
+        // Culture Info
+        public const string CURRENT_CULTURE_INFO = "en-US";
     }
 }

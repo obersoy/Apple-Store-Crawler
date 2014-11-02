@@ -9,18 +9,17 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
 
-namespace AppStoreNumericsWorker
+namespace AppStoreAppUrlsWorker
 {
-    class NumericsWorker
+    class UrlsWorker
     {
         // Logging Tool
         private static LogWrapper _logger;
 
         // Configuration Values
-        private static string _numericUrlsQueueName;
         private static string _appUrlsQueueName;
+        private static string _appsDataQueueName;
         private static string _awsKey;
         private static string _awsKeySecret;
         private static int    _maxRetries;
@@ -31,6 +30,7 @@ namespace AppStoreNumericsWorker
 
         static void Main (string[] args)
         {
+
             // Creating Needed Instances
             RequestsHandler httpClient = new RequestsHandler ();
             AppStoreParser  parser     = new AppStoreParser ();
@@ -42,30 +42,30 @@ namespace AppStoreNumericsWorker
 
             // AWS Queue Handler
             _logger.LogMessage ("Initializing Queues");
-            AWSSQSHelper numericUrlQueue   = new AWSSQSHelper (_numericUrlsQueueName , _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
-            AWSSQSHelper appsUrlQueue      = new AWSSQSHelper (_appUrlsQueueName     , _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
-
+            AWSSQSHelper appsUrlQueue  = new AWSSQSHelper (_appUrlsQueueName , _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
+            AWSSQSHelper appsDataQueue = new AWSSQSHelper (_appsDataQueueName, _maxMessagesPerDequeue, _awsKey, _awsKeySecret);
+            
             // Setting Error Flag to No Error ( 0 )
             System.Environment.ExitCode = 0;
 
             // Initialiazing Control Variables
             int fallbackWaitTime = 1;
 
-            _logger.LogMessage ("Started Processing Numeric Urls");
+            _logger.LogMessage ("Started Processing Individual Apps Urls");
 
             do
             {
                 try
                 {
                     // Dequeueing messages from the Queue
-                    if (!numericUrlQueue.DeQueueMessages ())
+                    if (!appsUrlQueue.DeQueueMessages ())
                     {
                         Thread.Sleep (_hiccupTime); // Hiccup                   
                         continue;
                     }
 
                     // Checking for no message received, and false positives situations
-                    if (!numericUrlQueue.AnyMessageReceived ())
+                    if (!appsUrlQueue.AnyMessageReceived ())
                     {
                         // If no message was found, increases the wait time
                         int waitTime;
@@ -92,7 +92,7 @@ namespace AppStoreNumericsWorker
                     fallbackWaitTime = 1;
 
                     // Iterating over dequeued Messages
-                    foreach (var numericUrl in numericUrlQueue.GetDequeuedMessages ())
+                    foreach (var appUrl in appsUrlQueue.GetDequeuedMessages ())
                     {
                         try
                         {
@@ -104,7 +104,8 @@ namespace AppStoreNumericsWorker
                             do
                             {
                                 // Executing Http Request for the Category Url
-                                htmlResponse = httpClient.Get (numericUrl.Body);
+                                appUrl.Body = "https://itunes.apple.com/us/app/action-run-3d/id632371832?mt=8";
+                                htmlResponse = httpClient.Get (appUrl.Body);
 
                                 if (String.IsNullOrEmpty (htmlResponse))
                                 {
@@ -118,27 +119,27 @@ namespace AppStoreNumericsWorker
                             if (String.IsNullOrWhiteSpace (htmlResponse))
                             {
                                 // Deletes Message and moves on
-                                numericUrlQueue.DeleteMessage (numericUrl);
+                                appsUrlQueue.DeleteMessage (appUrl);
                                 continue;
                             }
 
                             // Feedback
-                            _logger.LogMessage ("Current page " + numericUrl.Body, "Extracting App Urls");
+                            _logger.LogMessage ("Current page " + appUrl.Body, "Parsing App Data");
 
-                            foreach (var parsedAppUrl in parser.ParseAppsUrls (htmlResponse))
-                            {
-                                // Enqueueing App Urls
-                                appsUrlQueue.EnqueueMessage (HttpUtility.HtmlDecode (parsedAppUrl));
-                            }
+                            // Parsing Data out of the Html Page
+                            parser.ParseAppPage (htmlResponse);
+
+
+
                         }
                         catch (Exception ex)
                         {
-                            _logger.LogMessage (ex.Message, "Numeric Url Processing", BDC.BDCCommons.TLogEventLevel.Error);
+                            _logger.LogMessage (ex.Message, "App Url Processing", BDC.BDCCommons.TLogEventLevel.Error);
                         }
                         finally
                         {
                             // Deleting the message
-                            numericUrlQueue.DeleteMessage (numericUrl);
+                            appsUrlQueue.DeleteMessage (appUrl);
                         }
                     }
                 }
@@ -147,17 +148,15 @@ namespace AppStoreNumericsWorker
                     _logger.LogMessage (ex);
                 }
 
-
             } while (true);
-
         }
 
         private static void LoadConfiguration ()
         {
             _maxRetries             = ConfigurationReader.LoadConfigurationSetting<int>    ("MaxRetries"           , 0);
             _maxMessagesPerDequeue  = ConfigurationReader.LoadConfigurationSetting<int>    ("MaxMessagesPerDequeue", 10);
-            _numericUrlsQueueName   = ConfigurationReader.LoadConfigurationSetting<String> ("AWSNumericUrlsQueue"  , String.Empty);
             _appUrlsQueueName       = ConfigurationReader.LoadConfigurationSetting<String> ("AWSAppUrlsQueue"      , String.Empty);
+            _appsDataQueueName      = ConfigurationReader.LoadConfigurationSetting<String> ("AWSAppsDataQueue"  , String.Empty);
             _awsKey                 = ConfigurationReader.LoadConfigurationSetting<String> ("AWSKey"               , String.Empty);
             _awsKeySecret           = ConfigurationReader.LoadConfigurationSetting<String> ("AWSKeySecret"         , String.Empty);
         }

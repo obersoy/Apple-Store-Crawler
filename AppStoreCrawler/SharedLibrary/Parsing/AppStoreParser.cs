@@ -1,9 +1,12 @@
 ﻿using HtmlAgilityPack;
+using SharedLibrary.Models;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace SharedLibrary.Parsing
 {
@@ -106,6 +109,57 @@ namespace SharedLibrary.Parsing
                     yield return href.Value;
                 }
             }
+        }
+
+        public AppleStoreAppModel ParseAppPage (string htmlResponse)
+        {
+            // Creating HTML Map based on the html response
+            HtmlDocument map = new HtmlDocument ();
+            map.LoadHtml (htmlResponse);
+
+            // Instantiating Empty Parsed App
+            AppleStoreAppModel parsedApp = new AppleStoreAppModel ();
+
+            // Reaching nodes of interest
+            parsedApp.name          = GetNodeValue (map, Consts.XPATH_TITLE).Trim();
+            parsedApp.developerName = GetAppDeveloperName (map);
+            parsedApp.price         = GetAppPrice (map);
+            parsedApp.isFree        = parsedApp.price == 0.0 ? true : false;
+
+
+            return parsedApp;
+        }
+
+        private string GetAppDeveloperName (HtmlDocument map)
+        {
+            string developerName = GetNodeValue (map, Consts.XPATH_DEVELOPER_NAME);
+
+            return String.IsNullOrEmpty (developerName) ? String.Empty : developerName.Replace ("By", String.Empty).Trim().ToUpper();
+        }
+
+        private double GetAppPrice (HtmlDocument map)
+        {
+            // Replacing App Price "dot" decimal separator with a comma to allow correct double conversion
+            string stringPrice = GetNodeValue (map, Consts.XPATH_APP_PRICE).Replace ('.',',');
+
+            // Checking for "free" app
+            if (stringPrice.IndexOf ("free", StringComparison.InvariantCultureIgnoreCase) >= 0)
+            {
+                return 0;
+            }
+
+            // Else, parses the correct price out of the node
+            // Culture info is used to determine the correct currency symbol to be removed. This might change depending on
+            // the store country or your own IP sometimes
+            CultureInfo cInfo = CultureInfo.GetCultureInfo (Consts.CURRENT_CULTURE_INFO);
+            return Convert.ToDouble (stringPrice.Replace (cInfo.NumberFormat.CurrencySymbol, String.Empty));
+        }
+
+        private string GetNodeValue (HtmlDocument map, string xPath)
+        {
+            var node = map.DocumentNode.SelectSingleNode (xPath);
+
+            return node == null ? String.Empty : HttpUtility.HtmlDecode (node.InnerText);
         }
     }
 }

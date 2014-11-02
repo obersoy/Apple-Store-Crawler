@@ -132,6 +132,7 @@ namespace SharedLibrary.Parsing
             parsedApp.version       = GetAppVersion (map);
             parsedApp.size          = GetAppSize (map);
             parsedApp.thumbnailUrl  = GetThumbnailUrl (map);
+            parsedApp.languages     = GetLanguages (map);
 
 
             return parsedApp;
@@ -219,6 +220,15 @@ namespace SharedLibrary.Parsing
 
             // Reaching Src attribute of the node
             return thumbnailNode.Attributes["src-swap-high-dpi"].Value;
+        }
+
+        private string[] GetLanguages (HtmlDocument map)
+        {
+            // Reaching Node that contains the Version number
+            HtmlNode languagesNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_LANGUAGES);
+            languagesNode          = languagesNode.FirstChild.NextSibling;
+
+            return languagesNode.InnerText.Split (',').Select (t => t.Trim()).ToArray();
         }
 
         private string GetNodeValue (HtmlDocument map, string xPath)

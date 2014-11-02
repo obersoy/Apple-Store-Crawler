@@ -122,6 +122,9 @@ namespace AppStoreNumericsWorker
                                 continue;
                             }
 
+                            // Feedback
+                            _logger.LogMessage ("Current page " + numericUrl.Body, "Extracting App Urls");
+
                             foreach (var parsedAppUrl in parser.ParseAppsUrls (htmlResponse))
                             {
                                 // Enqueueing App Urls

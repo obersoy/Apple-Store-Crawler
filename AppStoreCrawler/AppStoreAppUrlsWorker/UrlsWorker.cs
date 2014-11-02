@@ -2,6 +2,7 @@
 using SharedLibrary.AWS;
 using SharedLibrary.ConfigurationReader;
 using SharedLibrary.Logging;
+using SharedLibrary.Models;
 using SharedLibrary.Parsing;
 using System;
 using System.Collections.Generic;
@@ -127,8 +128,7 @@ namespace AppStoreAppUrlsWorker
                             _logger.LogMessage ("Current page " + appUrl.Body, "Parsing App Data");
 
                             // Parsing Data out of the Html Page
-                            parser.ParseAppPage (htmlResponse);
-
+                            AppleStoreAppModel parsedApp = parser.ParseAppPage (htmlResponse);
 
 
                         }

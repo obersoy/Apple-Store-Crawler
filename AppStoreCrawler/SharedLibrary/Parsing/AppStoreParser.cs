@@ -130,6 +130,8 @@ namespace SharedLibrary.Parsing
             parsedApp.updateDate    = GetAppUpdateDate (map);
             //parsedApp.description = GetAppDescription (map); //TODO: Figure out how to get description on a separated request
             parsedApp.version       = GetAppVersion (map);
+            parsedApp.size          = GetAppSize (map);
+            parsedApp.thumbnailUrl  = GetThumbnailUrl (map);
 
 
             return parsedApp;
@@ -199,6 +201,24 @@ namespace SharedLibrary.Parsing
             versionNode = versionNode.ParentNode.FirstChild.NextSibling;
 
             return versionNode.InnerText.Trim();
+        }
+
+        private string GetAppSize (HtmlDocument map)
+        {
+            // Reaching Node that contains the Version number
+            HtmlNode versionNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_APP_SIZE);
+            versionNode = versionNode.ParentNode.FirstChild.NextSibling;
+
+            return versionNode.InnerText.Trim ();
+        }
+
+        private string GetThumbnailUrl (HtmlDocument map)
+        {
+             // Reaching Thumbnail node
+            HtmlNode thumbnailNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_THUMBNAIL);
+
+            // Reaching Src attribute of the node
+            return thumbnailNode.Attributes["src-swap-high-dpi"].Value;
         }
 
         private string GetNodeValue (HtmlDocument map, string xPath)

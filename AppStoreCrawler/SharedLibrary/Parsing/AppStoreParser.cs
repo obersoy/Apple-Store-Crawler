@@ -323,7 +323,37 @@ namespace SharedLibrary.Parsing
         {
             List<InAppPurchase> inAppPurchases = new List<InAppPurchase> ();
 
+            // Reaching root node of purchases
+            HtmlNode inAppNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_IN_APP_PURCHASES);
 
+            // Checking if this page has the In App Purchase List
+            if (inAppNode == null)
+            {
+                return null;
+            }
+
+            // Parsing out purchases
+            int purchaseRanking = 1;
+            CultureInfo cInfo   = CultureInfo.GetCultureInfo (Consts.CURRENT_CULTURE_INFO);
+            foreach (HtmlNode purchaseListNode in inAppNode.SelectNodes (".//ol[@class='list']/li"))
+            {
+                // Parsing In App Purchase Name
+                string inAppName = HttpUtility.HtmlDecode (purchaseListNode.SelectSingleNode ("./span[@class='in-app-title']").InnerText.Trim ());
+
+                // Parsing In App Purchase Price
+                string inAppPurchasePrice = purchaseListNode.SelectSingleNode ("./span[@class='in-app-price']").InnerText.Trim ().Replace ('.',',');
+
+                // Converting String price to double
+                double inAppPrice = Convert.ToDouble (inAppPurchasePrice.Replace (cInfo.NumberFormat.CurrencySymbol, String.Empty));
+
+                // Creating Object
+                inAppPurchases.Add (new InAppPurchase ()
+                    {
+                        ranking    = purchaseRanking++,
+                        inAppName  = inAppName,
+                        inAppPrice = inAppPrice
+                    });
+            }
 
             return inAppPurchases.ToArray ();
         }

@@ -285,22 +285,41 @@ namespace SharedLibrary.Parsing
             // Checking if this app has any ratings
             if (childNode != null)
             {
-                // If there are ratings for this app, parse them
-                // Node 1 : Current Version Ratings
                 string attributeValue = childNode.Attributes["aria-label"].Value;
-                int[]  parsedRatings  = RatingsParser (attributeValue);
+                int[]  parsedRatings   = RatingsParser (attributeValue);
 
-                appRating.starsRatingCurrentVersion = parsedRatings[0];
-                appRating.ratingsCurrentVersion     = parsedRatings[1];
+                // Checking if this node is a "All Versions" one, or the "Current Version"
+                if (childNode.PreviousSibling.PreviousSibling.InnerText.IndexOf ("all", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                {
+                    appRating.starsVersionAllVersions = parsedRatings[0];
+                    appRating.ratingsAllVersions      = parsedRatings[1];
+                }
+                else // Current Version
+                {
+                    appRating.starsRatingCurrentVersion = parsedRatings[0];
+                    appRating.ratingsCurrentVersion     = parsedRatings[1];
+                }
 
-                // Node 2 : All Versions Ratings
+                // Checking if the second node exists
                 childNode = ratingNode.SelectSingleNode (".//div[@class='rating'][2]");
 
-                attributeValue = childNode.Attributes["aria-label"].Value;
-                parsedRatings  = RatingsParser (attributeValue);
+                if (childNode != null)
+                {
+                    // Parsing attributes of the second node if it exists
+                    attributeValue = childNode.Attributes["aria-label"].Value;
+                    parsedRatings  = RatingsParser (attributeValue);
 
-                appRating.starsVersionAllVersions = parsedRatings[0];
-                appRating.ratingsAllVersions      = parsedRatings[1];
+                    if (childNode.PreviousSibling.PreviousSibling.InnerText.IndexOf ("all", StringComparison.InvariantCultureIgnoreCase) >= 0)
+                    {
+                        appRating.starsVersionAllVersions = parsedRatings[0];
+                        appRating.ratingsAllVersions      = parsedRatings[1];
+                    }
+                    else
+                    {
+                        appRating.starsRatingCurrentVersion = parsedRatings[0];
+                        appRating.ratingsCurrentVersion     = parsedRatings[1];
+                    }
+                }                
             }
 
             return appRating;

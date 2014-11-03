@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,6 +32,11 @@ namespace SharedLibrary.Models
         public AppleStoreAppModel ()
         {
             _id = new ObjectId ();
+        }
+
+        public string ToJson ()
+        {
+            return JsonConvert.SerializeObject (this);
         }
     }
 

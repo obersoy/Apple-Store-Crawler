@@ -105,7 +105,7 @@ namespace AppStoreAppUrlsWorker
                             do
                             {
                                 // Executing Http Request for the Category Url
-                                appUrl.Body = "https://itunes.apple.com/us/app/action-run-3d/id632371832?mt=8";
+                                //appUrl.Body = "https://itunes.apple.com/us/app/action-run-3d/id632371832?mt=8";
                                 //appUrl.Body = "https://itunes.apple.com/us/app/emoji-2-free-new-emoticons/id521863802?mt=8";
                                 //appUrl.Body = "https://itunes.apple.com/us/app/candy-crush-saga/id553834731?mt=8";
                                 //appUrl.Body = "https://itunes.apple.com/us/app/dba-den-bla-avis/id448605988?mt=8";
@@ -113,8 +113,13 @@ namespace AppStoreAppUrlsWorker
 
                                 if (String.IsNullOrEmpty (htmlResponse))
                                 {
-                                    _logger.LogMessage ("Retrying Request for Category Page", "Request Error", BDC.BDCCommons.TLogEventLevel.Error);
+                                    // Extending Fallback time
                                     retries++;
+                                    int sleepTime = retries * _hiccupTime <= 30000 ? retries * _hiccupTime : 30000;
+
+                                    _logger.LogMessage ("Retrying Request for App Page [ " + sleepTime/1000 + " ]", "Request Error", BDC.BDCCommons.TLogEventLevel.Error);
+                                    
+                                    Thread.Sleep (sleepTime);
                                 }
 
                             } while (String.IsNullOrWhiteSpace (htmlResponse) && retries <= _maxRetries);
@@ -123,7 +128,7 @@ namespace AppStoreAppUrlsWorker
                             if (String.IsNullOrWhiteSpace (htmlResponse))
                             {
                                 // Deletes Message and moves on
-                                appsUrlQueue.DeleteMessage (appUrl);
+                                //appsUrlQueue.DeleteMessage (appUrl);
                                 continue;
                             }
 
@@ -132,9 +137,13 @@ namespace AppStoreAppUrlsWorker
 
                             // Parsing Data out of the Html Page
                             AppleStoreAppModel parsedApp = parser.ParseAppPage (htmlResponse);
+                            parsedApp.url                = appUrl.Body;
 
                             // Enqueueing App Data
                             appsDataQueue.EnqueueMessage (parsedApp.ToJson ());
+
+                            // Little Hiccup
+                            Thread.Sleep (_hiccupTime);
 
                         }
                         catch (Exception ex)
@@ -143,7 +152,7 @@ namespace AppStoreAppUrlsWorker
                         }
                         finally
                         {
-                            // Deleting the message
+                             //Deleting the message
                             appsUrlQueue.DeleteMessage (appUrl);
                         }
                     }

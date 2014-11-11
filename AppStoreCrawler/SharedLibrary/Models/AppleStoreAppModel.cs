@@ -1,4 +1,5 @@
 ﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -10,12 +11,15 @@ namespace SharedLibrary.Models
 {
     public class AppleStoreAppModel
     {
-        public ObjectId _id                      { get; set; }
+        [BsonIgnore]
+        public String   id                       { get; set; }
+        public string   url                      { get; set; }
         public string   name                     { get; set; }
         public string   developerName            { get; set; }
         public string   developerUrl             { get; set; }
         public double   price                    { get; set; }
         public bool     isFree                   { get; set; }
+        [BsonIgnore]
         public string   description              { get; set; }
         public string   thumbnailUrl             { get; set; }
         public string   compatibility            { get; set; }
@@ -29,14 +33,14 @@ namespace SharedLibrary.Models
         public Rating   rating                   { get; set; }
         public InAppPurchase[] topInAppPurchases { get; set; }
 
-        public AppleStoreAppModel ()
-        {
-            _id = new ObjectId ();
-        }
-
         public string ToJson ()
         {
             return JsonConvert.SerializeObject (this);
+        }
+
+        public static AppleStoreAppModel FromJson (string json)
+        {
+            return JsonConvert.DeserializeObject<AppleStoreAppModel> (json);
         }
     }
 

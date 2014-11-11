@@ -231,6 +231,13 @@ namespace SharedLibrary.Parsing
         {
             // Reaching Node that contains the Version number
             HtmlNode languagesNode = map.DocumentNode.SelectSingleNode (Consts.XPATH_LANGUAGES);
+
+            // Sanity Check
+            if (languagesNode == null)
+            {
+                return null;
+            }
+
             languagesNode          = languagesNode.FirstChild.NextSibling;
 
             return languagesNode.InnerText.Split (',').Select (t => t.Trim()).ToArray();

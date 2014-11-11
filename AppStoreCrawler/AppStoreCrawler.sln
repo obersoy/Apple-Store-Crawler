@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppStoreNumericsWorker", "A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppStoreAppUrlsWorker", "AppStoreAppUrlsWorker\AppStoreAppUrlsWorker.csproj", "{437D03E7-A1A9-4039-AE0A-F6935326B2FD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AppStoreRecorder", "AppStoreRecorder\AppStoreRecorder.csproj", "{0524D420-B15C-4BB8-9C10-ED278BE85D6B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{437D03E7-A1A9-4039-AE0A-F6935326B2FD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{437D03E7-A1A9-4039-AE0A-F6935326B2FD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{437D03E7-A1A9-4039-AE0A-F6935326B2FD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0524D420-B15C-4BB8-9C10-ED278BE85D6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0524D420-B15C-4BB8-9C10-ED278BE85D6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0524D420-B15C-4BB8-9C10-ED278BE85D6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0524D420-B15C-4BB8-9C10-ED278BE85D6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -31,7 +31,13 @@ namespace SharedLibrary
 
         public string Get (string url)
         {
-            return new WebRequests().Get (url);
+            using (WebRequests httpClient = new WebRequests ())
+            {
+                httpClient.UserAgent = Consts.USER_AGENT;
+                string htmlResponse  = httpClient.Get (url);
+
+                return htmlResponse;
+            }
         }
     }
 }
